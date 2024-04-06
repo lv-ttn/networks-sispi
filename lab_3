@@ -1,0 +1,144 @@
+Цель: Настроить межвлановую коммутацию методом router-on-a-stick(ROS)
+IP-план:
+R1 - gi0/0 - 192.1.20.1 - 255.255.255.0
+- gi0/1 192.1.10.1 - 255.255.255.0 
+SW1 - vlan 10 - 192.1.10.11 - 255.255.255.0 - 192.1.10.1
+SW2 -  vlan 20 - 192.1.20.12 - 255.255.255.0 - 192.1.20.1
+PC-A - NIC - 192.1.10.3 - 255.255.255.0 - 192.1.10.1
+PC-B - NIC - 192.1.20.3 - 255.255.255.0 - 192.1.20.1
+
+Часть 1: Настройка базовых параметров устройства
+
+Настроим базовые параметры для маршрутизатора R1
+enable
+configure terminal
+no ip domain-lookup
+hostname R1
+enable secret class
+interface GigabitEthernet0/0
+ip address 192.1.20.1 255.255.255.0
+no shutdown
+exit
+interface GigabitEthernet0/1
+ip address 192.1.10.1 255.255.255.0
+no shutdown
+end
+write memory
+
+Настроим базовые параметры для коммутатора SW1
+enable
+configure terminal
+no ip domain-lookup
+hostname S1
+enable secret class
+vlan 10
+exit
+interface vlan 10
+ip address 192.1.10.11 255.255.255.0
+no shutdown
+exit
+ip default-gateway 192.1.10.1
+end
+write memory
+
+Настроим базовые параметры для коммутатора SW2
+enable
+configure terminal
+no ip domain-lookup
+hostname S2
+enable secret class
+vlan 20
+exit
+interface vlan 20
+ip address 192.1.20.12 255.255.255.0
+no shutdown
+exit
+ip default-gateway 192.1.20.1
+end
+write memory
+
+Настроим базовые параметры на компьютерах PC-A и PC-B(GUI)
+PC-A - NIC - 192.1.10.3 - 255.255.255.0 - 192.1.10.1
+PC-B - NIC - 192.1.20.3 - 255.255.255.0 - 192.1.20.1
+
+Часть 2: VLAN и trunk на SW1 и SW2
+Настроим VLAN на SW1
+enable
+class
+configure terminal
+vlan 10
+name Student
+exit
+vlan 20
+name Faculty-Admin
+exit
+int FastEthernet0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,20
+exit
+int range FastEthernet0/5-6
+switchport mode access
+switchport access vlan 10
+end
+write memory
+
+Настроим VLAN на SW2
+enable
+class
+configure terminal
+vlan 10
+name Student
+exit
+vlan 20
+name Faculty-Admin
+exit
+int FastEthernet0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,20
+exit
+int range FastEthernet0/11,  FastEthernet0/18
+switchport mode access
+switchport access vlan 10
+end
+write memory
+Часть 3: Настройка основных мер безопасности	
+SSH на R1
+security password min-length 5
+ip ssh version 2
+ip domain-name CCNA-lab.com
+username username privilege 15 secret password
+crypto key generate rsa
+1024
+line vty 0 15
+transport input ssh
+logging synchronous
+login local
+exec-timeout 5 0
+login block-for 30 attempts 3 within 120
+exit
+interface GigabitEthernet0/0/2
+shutdown
+end
+do wr
+SSH на SW1
+security password min-length 5
+ip ssh version 2
+ip domain-name CCNA-lab.com
+username username privilege 15 secret password
+crypto key generate rsa
+1024
+line vty 0 15
+transport input ssh
+logging synchronous
+login local
+exec-timeout 10 0
+login block-for 600 attempts 3 within 600
+exit
+interface range FastEthernet0/2-5,FastEthernet0/7-24,GigabitEthernet0/1-2
+shutdown
+end
+write memory
+
+Результаты:
+1. По telnet нельзя подключиться, по ssh можно, если ввести неверный пароль три раза или неверное имя пользователя соединение блокируется на 30 секунд
+2. ping с PC1 на PC0 
