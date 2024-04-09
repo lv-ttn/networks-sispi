@@ -1,0 +1,59 @@
+Цель: Настроить статическую маршрутизацию
+IP-план:
+R1 - gi2/0 - 192.1.0.1 - 255.255.255.0 
+- S1/0 - 10.1.1.1 - 255.255.255.252 
+R3 - gi2/0 - 192.1.1.1 - 255.255.255.0 
+S0/0 (DCE) - 10.1.1.2 - 255.255.255.252
+Lo0 - 209.165.200.225 - 255.255.255.224 
+Lo1 - 198.133.219.1 - 255.255.255.0 
+PC-A - NIC - 192.1.0.10 - 255.255.255.0 - 192.1.0.1
+PC-C - NIC - 192.1.1.10 - 255.255.255.0 - 192.1.1.1
+
+Часть 1: Настройте базовые параметры на маршрутизаторах
+Настроим базовые параметры для маршрутизатора R1
+enable
+configure terminal
+hostname R1
+no ip domain-lookup
+interface GigabitEthernet2/0
+ip address 192.1.0.1 255.255.255.0
+no shutdown
+exit
+interface Serial1/0
+ip address 10.1.1.1 255.255.255.252
+no shutdown
+exit
+end
+write memory
+Настроим базовые параметры для маршрутизатора R3
+enable
+configure terminal
+hostname R3
+no ip domain-lookup
+interface GigabitEthernet2/0
+ip address 192.1.1.1 255.255.255.0
+no shutdown
+interface Serial0/0
+ip address 10.1.1.2 255.255.255.252
+clock rate 128000
+no shutdown
+exit
+interface Loopback1
+ip address 198.133.219.1 255.255.255.0
+	exit
+interface Loopback0
+ip address 209.165.200.225 255.255.255.224
+end
+write memory
+Настроим базовые параметры на компьютерах PC-A и PC-B(GUI)
+PC-A - NIC - 192.1.0.10 - 255.255.255.0 - 192.1.0.1
+PC-C - NIC - 192.1.1.10 - 255.255.255.0 - 192.1.1.1
+
+Часть 2: Настроим статическую маршрутизацию
+Пропишем маршруты на R1
+ip route 192.1.1.0 255.255.255.0 10.1.1.2
+ip route 198.133.219.0 255.255.255.0 Serial1/0
+ip route 209.165.200.224 255.255.255.224 10.1.1.2
+ip route 0.0.0.0 0.0.0.0 Serial0/0/1
+Пропишем маршруты на R3
+ip route 192.1.0.0 255.255.255.0 Serial0/0
