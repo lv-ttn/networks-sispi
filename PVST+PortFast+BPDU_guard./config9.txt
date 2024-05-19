@@ -1,0 +1,65 @@
+1. S1
+en
+conf t
+hostname S1
+spanning-tree mode pvst
+spanning-tree vlan 1,10,30,50,70 root primary
+interface FastEthernet0/24
+switchport access vlan 10
+switchport mode access
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+interface Vlan3
+ip address 172.3.3.1 255.255.255.0
+no sh 
+ex
+interface range FastEthernet0/1-4
+switchport trunk native vlan 3
+switchport mode trunk
+end 
+wr
+
+2. S2
+en
+conf t
+hostname S2
+interface range FastEthernet0/1-4
+switchport trunk native vlan 3
+switchport mode trunk
+ex
+spanning-tree mode pvst
+spanning-tree vlan 1,10,3,30,50,70,20,40,60,80 root secondary
+interface FastEthernet0/24
+switchport access vlan 20
+switchport mode access
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+interface Vlan3
+ip address 172.3.3.2 255.255.255.0
+end
+wr
+
+3. S3
+en
+conf t
+hostname S3
+spanning-tree mode pvst
+spanning-tree vlan 20,40,60,80,3 root primary
+interface FastEthernet0/24
+switchport access vlan 30
+switchport mode access
+spanning-tree portfast
+spanning-tree bpduguard enable
+ex
+interface Vlan3
+ip address 172.3.3.3 255.255.255.0
+no sh
+ex
+interface range FastEthernet0/1-4
+switchport trunk native vlan 3
+switchport mode trunk
+end
+wr
+
