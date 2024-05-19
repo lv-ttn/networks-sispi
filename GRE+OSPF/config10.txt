@@ -21,7 +21,7 @@ en
 conf t
 hostname R1
 enable secret class 
-security password
+service password encryption
 no ip domain-lookup
 banner motd ^CWarning...^C
 ip route 0.0.0.0 0.0.0.0 Serial0/1/0
@@ -41,7 +41,7 @@ en
 conf t
 hostname R2
 enable secret class 
-security password
+service password encryption
 no ip domain-lookup
 banner motd ^CWarning...^C
 ip route 0.0.0.0 0.0.0.0 Serial0/1/1 
@@ -60,7 +60,7 @@ en
 conf t
 hostname ISP
 enable secret class
-security password
+service password encryption
 banner motd ^CWarning...^C
 no ip domain-lookup
 interface Serial0/1/0
